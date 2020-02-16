@@ -7,7 +7,7 @@
 # top-most EditorConfig file
 root = true
 
-# Don't use tabs for indentation.
+# All files
 [*]
 indent_style = space
 
@@ -112,8 +112,8 @@ dotnet_naming_symbols.constant_fields.required_modifiers          = const
 
 [*.cs]
 # var preferences
-csharp_style_var_for_built_in_types = false:silent
-csharp_style_var_when_type_is_apparent = false:silent
+csharp_style_var_for_built_in_types = true:silent
+csharp_style_var_when_type_is_apparent = true:silent
 csharp_style_var_elsewhere = false:silent
 
 # Expression-bodied members
@@ -183,28 +183,32 @@ csharp_preserve_single_line_blocks = true
 # Code Analysis Severity      #
 ###############################
 
-# CA1054: Uri parameters should not be strings
-dotnet_diagnostic.CA1054.severity = none
-
-# CA1056: Uri properties should not be strings
-dotnet_diagnostic.CA1056.severity = none
-
 # CA1056: Internal classes should be instantiated
 dotnet_diagnostic.CA1812.severity = none
-
-# CA1820: Test for empty strings using length
-dotnet_diagnostic.CA1820.severity = none
 
 # CA1303: Do not pass literals as localized parameters
 dotnet_diagnostic.CA1303.severity = none
 
-# CA1031: Do not catch general exception types
-dotnet_diagnostic.CA1031.severity = none
-
 # CA2007: Consider calling ConfigureAwait on the awaited task
 dotnet_diagnostic.CA2007.severity = none
 
-# Auto generated Assembly Hook file
-[NUnit.AssemblyHooks.cs]
-# CA1707: Classes should not contain names with underscores
-dotnet_diagnostic.CA1707.severity = none
+# SA0001: XML comment analysis is disabled due to project configuration
+dotnet_diagnostic.SA0001.severity = none
+
+# SA1101: Prefix local calls with this
+dotnet_diagnostic.SA1101.severity = none
+
+# SX1101: Prefix local calls with this
+dotnet_diagnostic.SX1101.severity = error
+
+# SA1200: Using directives should be placed correctly
+dotnet_diagnostic.SA1200.severity = none
+
+# SA1503: Braces should not be omitted
+dotnet_diagnostic.SA1503.severity = none
+
+# SA1600: Elements should be documented
+dotnet_diagnostic.SA1600.severity = suggestion
+
+# SA1633: File should have header
+dotnet_diagnostic.SA1633.severity = none

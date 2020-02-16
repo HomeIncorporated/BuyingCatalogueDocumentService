@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -30,23 +31,14 @@ namespace NHSD.BuyingCatalogue.Documents.API.UnitTests
             mockStorage.Setup(s => s.DownloadAsync(It.IsAny<string>(), It.IsAny<string>()))
                 .Throws(exception);
 
-            var logLevel = LogLevel.None;
-            Exception actualException = null;
+            var mockLogger = new Mock<ILogger<SolutionsController>>();
+            mockLogger.Setup(GetLogExpression(exception)).Verifiable();
 
-            void Callback(LogLevel l, Exception e)
-            {
-                logLevel = l;
-                actualException = e;
-            }
-
-            var mockLogger = new MockLogger<SolutionsController>(Callback);
-
-            var controller = new SolutionsController(mockStorage.Object, mockLogger);
+            var controller = new SolutionsController(mockStorage.Object, mockLogger.Object);
 
             await controller.DownloadAsync("ID", "directory");
 
-            logLevel.Should().Be(LogLevel.Error);
-            actualException.Should().Be(exception);
+            mockLogger.Verify();
         }
 
         [Test]
@@ -126,29 +118,15 @@ namespace NHSD.BuyingCatalogue.Documents.API.UnitTests
             mockStorage.Verify(x => x.GetFileNamesAsync("Foobar"), Times.Once);
         }
 
-        // This hand-rolled mock is necessary because we currently have a dependency
-        // on ILogger<T> for logging. It is not possible to mock dynamically because
-        // the FormattedLogValues framework struct is internal.
+        // This expression is necessary for mocking because we currently have a dependency
+        // on ILogger<T> for logging.
         // Recommend that we refactor by defining our owning logging abstraction.
-        private class MockLogger<T> : ILogger<T>
-        {
-            private readonly Action<LogLevel, Exception> logCallback;
-
-            internal MockLogger(Action<LogLevel, Exception> logCallback) => this.logCallback = logCallback;
-
-            public IDisposable BeginScope<TState>(TState state) => throw new NotSupportedException();
-
-            public bool IsEnabled(LogLevel logLevel) => throw new NotSupportedException();
-
-            public void Log<TState>(
-                LogLevel logLevel,
-                EventId eventId,
-                TState state,
-                Exception exception,
-                Func<TState, Exception, string> formatter)
-            {
-                logCallback(logLevel, exception);
-            }
-        }
+        private static Expression<Action<ILogger<SolutionsController>>> GetLogExpression(Exception ex) =>
+            l => l.Log(
+                It.Is<LogLevel>(ll => ll == LogLevel.Error),
+                It.Is<EventId>(e => e == 0),
+                It.Is<It.IsAnyType>((v, t) => true),
+                It.Is<Exception>(e => e == ex),
+                It.Is<Func<It.IsAnyType, Exception, string>>((v, t) => true));
     }
 }

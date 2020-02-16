@@ -10,11 +10,11 @@ namespace NHSD.BuyingCatalogue.Documents.API.Repositories
 {
     internal class AzureBlobDocumentRepository : IDocumentRepository
     {
-        private readonly BlobContainerClient _client;
+        private readonly BlobContainerClient client;
 
         public AzureBlobDocumentRepository(BlobContainerClient client)
         {
-            _client = client;
+            this.client = client;
         }
 
         public async Task<IDocument> DownloadAsync(string solutionId, string documentName)
@@ -22,7 +22,7 @@ namespace NHSD.BuyingCatalogue.Documents.API.Repositories
             try
             {
                 return new AzureBlobDocument(
-                    await _client.GetBlobClient(Url.Combine(solutionId, documentName)).DownloadAsync());
+                    await client.GetBlobClient(Url.Combine(solutionId, documentName)).DownloadAsync());
             }
             catch (RequestFailedException e)
             {
@@ -32,7 +32,7 @@ namespace NHSD.BuyingCatalogue.Documents.API.Repositories
 
         public async IAsyncEnumerable<string> GetFileNamesAsync(string directory)
         {
-            var all = _client.GetBlobsAsync(BlobTraits.All, BlobStates.None, $"{directory}/");
+            var all = client.GetBlobsAsync(BlobTraits.All, BlobStates.None, $"{directory}/");
 
             await foreach (var blob in all)
             {

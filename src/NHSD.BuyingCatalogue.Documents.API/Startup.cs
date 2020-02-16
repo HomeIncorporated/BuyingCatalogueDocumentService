@@ -27,28 +27,6 @@ namespace NHSD.BuyingCatalogue.Documents.API
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
-        {
-            var settings = Configuration.GetSection("AzureBlobStorage").Get<AzureBlobStorageSettings>();
-            services.AddSingleton<IAzureBlobStorageSettings>(settings);
-
-            services.AddTransient(x => AzureBlobContainerClientFactory.Create(settings));
-
-            services.AddCustomHealthChecks(settings);
-
-            services.AddTransient<IDocumentRepository, AzureBlobDocumentRepository>();
-            services.AddControllers();
-            services.AddSwaggerGen(options =>
-                options.SwaggerDoc("v1",
-                    new OpenApiInfo
-                    {
-                        Title = "Documents API",
-                        Version = "v1",
-                        Description = "NHS Digital GP IT Buying Catalogue Documents HTTP API"
-                    }));
-        }
-
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         [SuppressMessage("ReSharper", "UnusedMember.Global", Justification = "Invoked by runtime.")]
         [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Invoked by runtime.")]
@@ -71,22 +49,47 @@ namespace NHSD.BuyingCatalogue.Documents.API
                 {
                     endpoints.MapControllers();
 
-                    endpoints.MapHealthChecks("/health/live",
+                    endpoints.MapHealthChecks(
+                        "/health/live",
                         new HealthCheckOptions
                         {
                             Predicate = healthCheckRegistration =>
-                                healthCheckRegistration.Tags.Contains(HealthCheckTags.Live)
+                                healthCheckRegistration.Tags.Contains(HealthCheckTags.Live),
                         });
 
-                    endpoints.MapHealthChecks("/health/ready",
+                    endpoints.MapHealthChecks(
+                        "/health/ready",
                         new HealthCheckOptions
                         {
                             Predicate = healthCheckRegistration =>
-                                healthCheckRegistration.Tags.Contains(HealthCheckTags.Ready)
+                                healthCheckRegistration.Tags.Contains(HealthCheckTags.Ready),
                         });
                 });
 
             LogConfiguration(app.ApplicationServices, logger);
+        }
+
+        // This method gets called by the runtime. Use this method to add services to the container.
+        public void ConfigureServices(IServiceCollection services)
+        {
+            var settings = Configuration.GetSection("AzureBlobStorage").Get<AzureBlobStorageSettings>();
+            services.AddSingleton<IAzureBlobStorageSettings>(settings);
+
+            services.AddTransient(x => AzureBlobContainerClientFactory.Create(settings));
+
+            services.AddCustomHealthChecks(settings);
+
+            services.AddTransient<IDocumentRepository, AzureBlobDocumentRepository>();
+            services.AddControllers();
+            services.AddSwaggerGen(options =>
+                options.SwaggerDoc(
+                    "v1",
+                    new OpenApiInfo
+                    {
+                        Title = "Documents API",
+                        Version = "v1",
+                        Description = "NHS Digital GP IT Buying Catalogue Documents HTTP API",
+                    }));
         }
 
         private static void LogConfiguration(IServiceProvider serviceProvider, ILogger logger)
